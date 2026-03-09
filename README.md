@@ -1,7 +1,5 @@
 # 🚗 VeriPermi - Application de Flashcards pour le Permis B
 
-**Version 1.0.0 - Release Officielle**
-
 VeriPermi est une application interactive complète conçue pour vous aider à préparer l'épreuve orale de l'examen pratique du permis de conduire français (**Permis B**). Elle regroupe l'intégralité des **100 groupes de questions officielle**, couvrant les vérifications techniques, la sécurité routière et les premiers secours.
 
 ## ✨ Caractéristiques

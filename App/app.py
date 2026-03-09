@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import random
-import os
 
 # Material Design Dark Theme Colors
 PRIMARY_BLUE = "#8AB4F8"

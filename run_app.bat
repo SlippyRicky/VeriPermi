@@ -37,8 +37,12 @@ echo [INFO] A browser window should open automatically.
 echo [INFO] Leave this window open while using the app.
 echo.
 
-:: Open browser slightly before server starts to avoid lag
-start "" http://localhost:8501
+:: Open browser in "App Mode" (Standalone window without URL bar)
+set APP_URL=http://localhost:8501
+
+:: Try Chrome first, then Edge, then default
+start chrome --app="%APP_URL%" 2>nul || start msedge --app="%APP_URL%" 2>nul || start "" "%APP_URL%"
+
 streamlit run App\app.py --server.port 8501 --server.headless true
 
 pause

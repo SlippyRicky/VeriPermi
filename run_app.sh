@@ -46,14 +46,24 @@ echo "[INFO] A browser window should open automatically."
 echo "[INFO] To stop the server, press Ctrl+C in this terminal."
 echo ""
 
-# Determine OS for opening browser
+# Determine OS for opening browser in APP mode (no URL bar, standalone window)
+APP_URL="http://localhost:$PORT"
+
 if [[ "$OSTYPE" == "darwin"* ]]; then
-    # macOS: Open in default browser
-    open "http://localhost:$PORT"
+    # macOS: Try Chrome first, then Edge, then default
+    if [ -d "/Applications/Google Chrome.app" ]; then
+        open -n -a "Google Chrome" --args --app="$APP_URL"
+    elif [ -d "/Applications/Microsoft Edge.app" ]; then
+        open -n -a "Microsoft Edge" --args --app="$APP_URL"
+    else
+        open "$APP_URL"
+    fi
 elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    # Linux: Try xdg-open
-    if command -v xdg-open &> /dev/null; then
-        xdg-open "http://localhost:$PORT" &
+    # Linux: Try google-chrome
+    if command -v google-chrome &> /dev/null; then
+        google-chrome --app="$APP_URL" &
+    else
+        xdg-open "$APP_URL" &
     fi
 fi
 

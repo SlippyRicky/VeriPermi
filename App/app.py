@@ -240,6 +240,9 @@ with st.sidebar:
     if st.button("🔄 Réinitialiser les scores"):
         st.session_state.scores = {}
         st.rerun()
+    
+    st.markdown("---")
+    st.caption("Version 1.0.0")
 
 # Filtering logic
 filtered_df = df.copy()

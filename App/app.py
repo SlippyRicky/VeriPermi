@@ -200,16 +200,24 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 CSV_FILE = os.path.join(SCRIPT_DIR, "driving_questions.csv")
 
 @st.cache_data
-def load_data():
-    if not os.path.exists(CSV_FILE): return None
+def load_data(file_path):
+    if not os.path.exists(file_path): return None
     try:
-        df = pd.read_csv(CSV_FILE, quotechar='"')
+        df = pd.read_csv(file_path, quotechar='"', encoding='utf-8')
+        
+        # Validation for expected columns
+        expected_cols = ['Category', 'Group_ID', 'Question', 'Reponse Attendue', 'Context Info']
+        for col in expected_cols:
+            if col not in df.columns:
+                st.error(f"Fichier CSV invalide. Colonne manquante: {col}")
+                return None
+                
         # Create a unique ID for tracking scores
         df['UID'] = df.index
         return df
     except: return None
 
-df = load_data()
+df = load_data(CSV_FILE)
 if df is None:
     st.error("Base de données manquante ou corrompue.")
     st.stop()
@@ -228,8 +236,9 @@ with st.sidebar:
     
     st.markdown("---")
     if st.button("🔀 Tirage Aléatoire"):
-        st.session_state.card_index = random.randint(0, len(df)-1)
-        st.session_state.show_answer = False
+        if not filtered_df.empty:
+            st.session_state.card_index = random.randint(0, len(filtered_df)-1)
+            st.session_state.show_answer = False
         
     st.markdown("---")
     st.header("Statistiques")
@@ -242,20 +251,25 @@ with st.sidebar:
         st.rerun()
     
     st.markdown("---")
-    st.caption("Version 1.0.0")
+    st.caption("Version 1.0.1")
 
 # Filtering logic
-filtered_df = df.copy()
+filtered_df = df
 if selected_category != "Tous":
     filtered_df = filtered_df[filtered_df['Category'] == selected_category]
 if group_id_search:
     try:
         val = int(group_id_search)
         filtered_df = filtered_df[filtered_df['Group_ID'] == val]
-    except: pass
+    except ValueError:
+        st.sidebar.error("Veuillez entrer un nombre valide (ex: 42).")
 
 if filtered_df.empty:
-    st.warning("Aucun résultat pour cette recherche.")
+    st.warning("Aucun résultat pour cette recherche. Veuillez modifier vos filtres dans le menu latéral.")
+    # Show empty state in tabs instead of stopping the app to keep sidebar alive
+    tab1, tab2 = st.tabs(["🃏 Mode Flashcards", "📋 Mode Liste Colorée"])
+    with tab1: st.info("Aucune carte à afficher.")
+    with tab2: st.info("Aucune liste à afficher.")
     st.stop()
 
 # Reset index if out of bounds

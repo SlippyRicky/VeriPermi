@@ -37,12 +37,16 @@ echo [INFO] A browser window should open automatically.
 echo [INFO] Leave this window open while using the app.
 echo.
 
+:: Run Streamlit in the background
+start /B "" streamlit run App\app.py --server.port 8501 --server.headless true
+
+echo [INFO] Waiting for Streamlit server to start...
+timeout /t 4 /nobreak >nul
+
 :: Open browser in "App Mode" (Standalone window without URL bar)
 set APP_URL=http://localhost:8501
 
 :: Try Chrome first, then Edge, then default
 start chrome --app="%APP_URL%" 2>nul || start msedge --app="%APP_URL%" 2>nul || start "" "%APP_URL%"
-
-streamlit run App\app.py --server.port 8501 --server.headless true
 
 pause

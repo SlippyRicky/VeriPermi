@@ -14,4 +14,8 @@ __pycache__/
 Thumbs.db
 
 # App logs
+*.log
 App/server.log
+
+# Scratchpad
+banque_verif.rtf

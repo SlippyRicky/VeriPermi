@@ -46,6 +46,18 @@ echo "[INFO] A browser window should open automatically."
 echo "[INFO] To stop the server, press Ctrl+C in this terminal."
 echo ""
 
+# Run Streamlit in the background
+streamlit run App/app.py --server.port $PORT --server.headless true &
+STREAMLIT_PID=$!
+
+echo "[INFO] Waiting for Streamlit server to start..."
+for i in {1..15}; do
+    if curl -s http://localhost:$PORT > /dev/null; then
+        break
+    fi
+    sleep 1
+done
+
 # Determine OS for opening browser in APP mode (no URL bar, standalone window)
 APP_URL="http://localhost:$PORT"
 
@@ -67,5 +79,5 @@ elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
     fi
 fi
 
-# Run Streamlit (blocking)
-streamlit run App/app.py --server.port $PORT --server.headless true
+# Wait for the Streamlit process to keep the script running
+wait $STREAMLIT_PID

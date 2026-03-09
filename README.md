@@ -1,5 +1,9 @@
 # 🚗 VeriPermi - Application de Flashcards pour le Permis B
 
+**Version 1.0.1 - Release Officielle**
+
+> **TL;DR (Pour les Recruteurs / Développeurs)**
+> VeriPermi est une application Python full-stack construite avec Streamlit et Pandas. Elle démontre la gestion de cache (`@st.cache_data`), le state management interactif (`st.session_state`), le filtrage dynamique de données (CSV), et l'intégration de CSS Material Design via des composants HTML customs. L'architecture est conçue pour être "Plug-and-Play" sur tous les OS via des scripts d'auto-amorçage.
 VeriPermi est une application interactive complète conçue pour vous aider à préparer l'épreuve orale de l'examen pratique du permis de conduire français (**Permis B**). Elle regroupe l'intégralité des **100 groupes de questions officielle**, couvrant les vérifications techniques, la sécurité routière et les premiers secours.
 
 ## ✨ Caractéristiques
@@ -24,12 +28,11 @@ Ce projet est conçu pour être "Plug-and-Play". Les scripts de lancement s'occu
     *   *macOS/Linux* : Généralement pré-installé, ou via `brew install python`.
 
 ### 🍎 Pour macOS & 🐧 Linux
-1.  Ouvrez votre Terminal.
+1.  Ouvrez votre Terminal (ou le Finder sur macOS).
 2.  Accédez au dossier du projet.
 3.  Lancez le script :
-    ```bash
-    ./run_app.sh
-    ```
+    *   **macOS** : Double-cliquez directement sur le fichier `Launch_Permis_App.command` depuis le Finder.
+    *   **Linux** : Exécutez `./run_app.sh` dans votre terminal.
 *Note : Le script ouvrira automatiquement l'application dans votre navigateur par défaut.*
 
 ### 🪟 Pour Windows
@@ -46,6 +49,7 @@ Ce projet est conçu pour être "Plug-and-Play". Les scripts de lancement s'occu
 *   **`App/`** :
     *   `app.py` : Code source de l'application web.
     *   `driving_questions.csv` : Base de données complète des 300 questions.
+    *   `grille-d-evaluation-du-permis-city-zen.jpg` : Grille officielle d'évaluation d'un inspecteur type.
 *   **`banque-verifications-23_01_2023.pdf`** : Document officiel source du Ministère.
 
 ---

@@ -365,8 +365,6 @@ if view_selection == "🃏 Mode Flashcards":
     card_html = f'<div class="card"><div><div class="category-tag">{cat_tag}{status_icon}</div><div class="question">{q_text}</div></div>'
     if st.session_state.show_answer:
         card_html += f'<div><div class="divider"></div><div style="display: flex; flex-direction: column; gap: 20px;"><div class="answer-container"><div style="font-size: 0.85rem; font-weight: bold; color: {PRIMARY_BLUE}; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em;">Réponse Attendue</div><div class="answer">{a_text}</div></div><div class="context-container" style="background-color: rgba(255, 255, 255, 0.03); border-left: 4px solid {TEXT_SECONDARY}; padding: 20px; border-radius: 4px;"><div style="font-size: 0.85rem; font-weight: bold; color: {TEXT_SECONDARY}; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em;">💡 Contexte & Astuce</div><div style="font-size: 1.05rem; color: {TEXT_PRIMARY}; line-height: 1.5; font-style: italic;">{c_text}</div></div></div></div>'
-    else:
-        card_html += '<div class="hidden-answer">Cliquez sur &#39;Afficher la réponse&#39; pour voir la solution</div>'
     card_html += '</div>'
 
     st.markdown(card_html, unsafe_allow_html=True)

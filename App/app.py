@@ -10,15 +10,17 @@ CARD_DARK = "#292A2D"
 TEXT_PRIMARY = "#E8EAED"
 TEXT_SECONDARY = "#9AA0A6"
 DIVIDER = "#3C4043"
+SUCCESS_GREEN = "#81C995"
+ERROR_RED = "#F28B82"
 
 # Set page config
 st.set_page_config(
     page_title="Permis de Conduire - Flashcards",
     page_icon="🚗",
-    layout="centered"
+    layout="wide"  # Use wide layout for better list view
 )
 
-# Comprehensive CSS for a modern Dark Mode Material Design look
+# Comprehensive CSS
 st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
@@ -27,6 +29,23 @@ st.markdown(f"""
 .stApp {{
     background-color: {SURFACE_DARK} !important;
     font-family: 'Roboto', sans-serif;
+}}
+
+/* Tab Styling */
+.stTabs [data-baseweb="tab-list"] {{
+    gap: 24px;
+}}
+.stTabs [data-baseweb="tab"] {{
+    color: {TEXT_SECONDARY};
+    background-color: transparent;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    font-size: 1.1rem;
+    font-weight: 500;
+}}
+.stTabs [aria-selected="true"] {{
+    color: {PRIMARY_BLUE} !important;
+    border-bottom-color: {PRIMARY_BLUE} !important;
 }}
 
 /* Card Style */
@@ -42,6 +61,9 @@ st.markdown(f"""
     flex-direction: column;
     justify-content: space-between;
     border: 1px solid {DIVIDER};
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
 }}
 
 .category-tag {{
@@ -106,6 +128,22 @@ st.markdown(f"""
     border-color: {PRIMARY_BLUE} !important;
 }}
 
+.btn-success > button {{
+    color: {SUCCESS_GREEN} !important;
+    border-color: {SUCCESS_GREEN} !important;
+}}
+.btn-success > button:hover {{
+    background-color: rgba(129, 201, 149, 0.1) !important;
+}}
+
+.btn-danger > button {{
+    color: {ERROR_RED} !important;
+    border-color: {ERROR_RED} !important;
+}}
+.btn-danger > button:hover {{
+    background-color: rgba(242, 139, 130, 0.1) !important;
+}}
+
 .stProgress > div > div > div > div {{
     background-color: {PRIMARY_BLUE};
 }}
@@ -115,7 +153,6 @@ st.markdown(f"""
 }}
 
 /* Unified Input Styling (Pill shape) */
-/* Target the container and all internal wrappers used by Streamlit/BaseWeb */
 .stTextInput div[data-baseweb="input"],
 .stTextInput div[data-baseweb="input"] > div,
 .stTextInput input {{
@@ -123,7 +160,6 @@ st.markdown(f"""
     border: none !important;
 }}
 
-/* Apply border and background only to the outermost wrapper */
 .stTextInput div[data-baseweb="input"] {{
     background-color: {SURFACE_DARK} !important;
     border: 1px solid {DIVIDER} !important;
@@ -139,8 +175,24 @@ st.markdown(f"""
     border-color: {PRIMARY_BLUE} !important;
     box-shadow: 0 0 0 1px {PRIMARY_BLUE} !important;
 }}
-</style>
 
+/* List View Styling */
+.list-item {{
+    background-color: {CARD_DARK};
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 15px;
+    border-left: 5px solid {DIVIDER};
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}}
+.cat-tech {{ border-left-color: {PRIMARY_BLUE}; }}
+.cat-safe {{ border-left-color: #F8BC45; }} /* Google Yellow variant */
+.cat-first {{ border-left-color: {SUCCESS_GREEN}; }}
+
+.list-q {{ font-size: 1.2rem; color: {TEXT_PRIMARY}; font-weight: 500; margin-bottom: 10px; }}
+.list-a {{ font-size: 1rem; color: {TEXT_SECONDARY}; margin-bottom: 10px; }}
+.list-meta {{ font-size: 0.8rem; color: {TEXT_SECONDARY}; text-transform: uppercase; font-weight: bold; }}
+</style>
 """, unsafe_allow_html=True)
 
 # Load Data
@@ -151,8 +203,9 @@ CSV_FILE = os.path.join(SCRIPT_DIR, "driving_questions.csv")
 def load_data():
     if not os.path.exists(CSV_FILE): return None
     try:
-        # Load with explicit quoting handling
         df = pd.read_csv(CSV_FILE, quotechar='"')
+        # Create a unique ID for tracking scores
+        df['UID'] = df.index
         return df
     except: return None
 
@@ -164,6 +217,7 @@ if df is None:
 # State Management
 if 'card_index' not in st.session_state: st.session_state.card_index = 0
 if 'show_answer' not in st.session_state: st.session_state.show_answer = False
+if 'scores' not in st.session_state: st.session_state.scores = {} # Dict mapping UID -> True (Right) / False (Wrong)
 
 # Sidebar
 with st.sidebar:
@@ -176,6 +230,16 @@ with st.sidebar:
     if st.button("🔀 Tirage Aléatoire"):
         st.session_state.card_index = random.randint(0, len(df)-1)
         st.session_state.show_answer = False
+        
+    st.markdown("---")
+    st.header("Statistiques")
+    known = sum(1 for v in st.session_state.scores.values() if v)
+    unknown = sum(1 for v in st.session_state.scores.values() if not v)
+    st.write(f"✅ Acquises : **{known}**")
+    st.write(f"❌ À revoir : **{unknown}**")
+    if st.button("🔄 Réinitialiser les scores"):
+        st.session_state.scores = {}
+        st.rerun()
 
 # Filtering logic
 filtered_df = df.copy()
@@ -195,54 +259,96 @@ if filtered_df.empty:
 if st.session_state.card_index >= len(filtered_df):
     st.session_state.card_index = 0
 
-# Card Display
-row = filtered_df.iloc[st.session_state.card_index]
-cat_tag = f"{row['Category']} | GROUPE {str(row['Group_ID']).zfill(2)}"
-q_text = str(row['Question'])
-a_text = str(row['Reponse Attendue'])
-c_text = str(row['Context Info'])
+# TABS
+tab1, tab2 = st.tabs(["🃏 Mode Flashcards", "📋 Mode Liste Colorée"])
 
-card_html = f'<div class="card"><div><div class="category-tag">{cat_tag}</div><div class="question">{q_text}</div></div>'
-if st.session_state.show_answer:
-    card_html += f"""
-    <div>
-        <div class="divider"></div>
-        <div style="display: flex; flex-direction: column; gap: 20px;">
-            <div class="answer-container">
-                <div style="font-size: 0.85rem; font-weight: bold; color: {PRIMARY_BLUE}; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em;">Réponse Attendue</div>
-                <div class="answer">{a_text}</div>
-            </div>
-            <div class="context-container" style="background-color: rgba(255, 255, 255, 0.03); border-left: 4px solid {TEXT_SECONDARY}; padding: 20px; border-radius: 4px;">
-                <div style="font-size: 0.85rem; font-weight: bold; color: {TEXT_SECONDARY}; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em;">💡 Contexte & Astuce</div>
-                <div style="font-size: 1.05rem; color: {TEXT_PRIMARY}; line-height: 1.5; font-style: italic;">{c_text}</div>
-            </div>
-        </div>
-    </div>
-    """
-else:
-    card_html += '<div class="hidden-answer">Cliquez sur &#39;Afficher la réponse&#39; pour voir la solution</div>'
-card_html += '</div>'
+with tab1:
+    # Card Display
+    row = filtered_df.iloc[st.session_state.card_index]
+    uid = row['UID']
+    cat_tag = f"{row['Category']} | GROUPE {str(row['Group_ID']).zfill(2)}"
+    
+    # Status indicator
+    status_icon = ""
+    if uid in st.session_state.scores:
+        status_icon = " ✅" if st.session_state.scores[uid] else " ❌"
+    
+    q_text = str(row['Question'])
+    a_text = str(row['Reponse Attendue'])
+    c_text = str(row['Context Info'])
 
-st.markdown(card_html, unsafe_allow_html=True)
+    card_html = f'<div class="card"><div><div class="category-tag">{cat_tag}{status_icon}</div><div class="question">{q_text}</div></div>'
+    if st.session_state.show_answer:
+        card_html += f'<div><div class="divider"></div><div style="display: flex; flex-direction: column; gap: 20px;"><div class="answer-container"><div style="font-size: 0.85rem; font-weight: bold; color: {PRIMARY_BLUE}; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em;">Réponse Attendue</div><div class="answer">{a_text}</div></div><div class="context-container" style="background-color: rgba(255, 255, 255, 0.03); border-left: 4px solid {TEXT_SECONDARY}; padding: 20px; border-radius: 4px;"><div style="font-size: 0.85rem; font-weight: bold; color: {TEXT_SECONDARY}; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em;">💡 Contexte & Astuce</div><div style="font-size: 1.05rem; color: {TEXT_PRIMARY}; line-height: 1.5; font-style: italic;">{c_text}</div></div></div></div>'
+    else:
+        card_html += '<div class="hidden-answer">Cliquez sur &#39;Afficher la réponse&#39; pour voir la solution</div>'
+    card_html += '</div>'
 
-# Progress
-st.progress((st.session_state.card_index + 1) / len(filtered_df))
-st.caption(f"Question {st.session_state.card_index + 1} sur {len(filtered_df)}")
+    st.markdown(card_html, unsafe_allow_html=True)
 
-# Buttons
-c1, c2, c3 = st.columns([1, 2, 1])
-with c1:
-    if st.button("← Précédent", use_container_width=True):
-        st.session_state.card_index = (st.session_state.card_index - 1) % len(filtered_df)
-        st.session_state.show_answer = False
-        st.rerun()
-with c2:
-    label = "Masquer la réponse" if st.session_state.show_answer else "Afficher la réponse"
-    if st.button(label, use_container_width=True):
-        st.session_state.show_answer = not st.session_state.show_answer
-        st.rerun()
-with c3:
-    if st.button("Suivant →", use_container_width=True):
-        st.session_state.card_index = (st.session_state.card_index + 1) % len(filtered_df)
-        st.session_state.show_answer = False
-        st.rerun()
+    # Core Navigation Buttons
+    c1, c2, c3 = st.columns([1, 2, 1])
+    with c1:
+        if st.button("← Précédent", use_container_width=True):
+            st.session_state.card_index = (st.session_state.card_index - 1) % len(filtered_df)
+            st.session_state.show_answer = False
+            st.rerun()
+    with c2:
+        label = "Masquer la réponse" if st.session_state.show_answer else "Afficher la réponse"
+        if st.button(label, use_container_width=True):
+            st.session_state.show_answer = not st.session_state.show_answer
+            st.rerun()
+    with c3:
+        if st.button("Suivant →", use_container_width=True):
+            st.session_state.card_index = (st.session_state.card_index + 1) % len(filtered_df)
+            st.session_state.show_answer = False
+            st.rerun()
+            
+    # Self-Evaluation Buttons (Only visible when answer is shown)
+    if st.session_state.show_answer:
+        st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
+        col_eval1, col_eval2, col_eval3, col_eval4 = st.columns([1, 1, 1, 1])
+        with col_eval2:
+            st.markdown('<div class="btn-success">', unsafe_allow_html=True)
+            if st.button("✅ J'avais bon", use_container_width=True):
+                st.session_state.scores[uid] = True
+                st.session_state.card_index = (st.session_state.card_index + 1) % len(filtered_df)
+                st.session_state.show_answer = False
+                st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
+        with col_eval3:
+            st.markdown('<div class="btn-danger">', unsafe_allow_html=True)
+            if st.button("❌ J'avais faux", use_container_width=True):
+                st.session_state.scores[uid] = False
+                st.session_state.card_index = (st.session_state.card_index + 1) % len(filtered_df)
+                st.session_state.show_answer = False
+                st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
+
+    # Progress
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.progress((st.session_state.card_index + 1) / len(filtered_df))
+    st.caption(f"Question {st.session_state.card_index + 1} sur {len(filtered_df)}")
+
+
+with tab2:
+    st.markdown("### Liste Complète des Questions")
+    st.caption("Filtrez via le menu latéral pour afficher uniquement le groupe désiré.")
+    
+    # Render custom HTML list
+    list_html = "<div>"
+    for _, item in filtered_df.iterrows():
+        cat = str(item['Category']).lower()
+        if "technical" in cat: border_class = "cat-tech"
+        elif "safety" in cat: border_class = "cat-safe"
+        else: border_class = "cat-first"
+        
+        status = ""
+        uid = item['UID']
+        if uid in st.session_state.scores:
+            status = " <span style='color:#81C995;'>✅</span>" if st.session_state.scores[uid] else " <span style='color:#F28B82;'>❌</span>"
+            
+        list_html += f'<div class="list-item {border_class}"><div class="list-meta">{item["Category"]} | GROUPE {str(item["Group_ID"]).zfill(2)}{status}</div><div class="list-q">{item["Question"]}</div><div class="list-a"><strong>Rép:</strong> {item["Reponse Attendue"]}</div></div>'
+    list_html += "</div>"
+    
+    st.markdown(list_html, unsafe_allow_html=True)

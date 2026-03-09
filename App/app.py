@@ -416,7 +416,7 @@ elif view_selection == "📋 Mode Liste Colorée":
         if uid in st.session_state.scores:
             status = " <span style='color:#81C995;'>✅</span>" if st.session_state.scores[uid] else " <span style='color:#F28B82;'>❌</span>"
             
-        c1, c2 = st.columns([6, 1], vertical_alignment="center")
+        c1, c2 = st.columns([6, 1])
         with c1:
             html = f'<div class="list-item {border_class}" style="margin-bottom: 0px;"><div class="list-meta">{item["Category"]} | GROUPE {str(item["Group_ID"]).zfill(2)}{status}</div><div class="list-q">{item["Question"]}</div><div class="list-a"><strong>Rép:</strong> {item["Reponse Attendue"]}</div></div>'
             st.markdown(html, unsafe_allow_html=True)

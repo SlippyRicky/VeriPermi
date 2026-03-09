@@ -1,6 +1,6 @@
 # 🚗 VeriPermi - Application de Flashcards pour le Permis B
 
-**Version 1.0.1 - Release Officielle**
+**Version 1.1.0 - Release Officielle**
 
 > **TL;DR (Pour les Recruteurs / Développeurs)**
 > VeriPermi est une application Python full-stack construite avec Streamlit et Pandas. Elle démontre la gestion de cache (`@st.cache_data`), le state management interactif (`st.session_state`), le filtrage dynamique de données (CSV), et l'intégration de CSS Material Design via des composants HTML customs. L'architecture est conçue pour être "Plug-and-Play" sur tous les OS via des scripts d'auto-amorçage.

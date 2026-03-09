@@ -226,16 +226,52 @@ if df is None:
 if 'card_index' not in st.session_state: st.session_state.card_index = 0
 if 'show_answer' not in st.session_state: st.session_state.show_answer = False
 if 'scores' not in st.session_state: st.session_state.scores = {} # Dict mapping UID -> True (Right) / False (Wrong)
+if 'active_view' not in st.session_state: st.session_state.active_view = "🃏 Mode Flashcards"
+if 'exam_mode_active' not in st.session_state: st.session_state.exam_mode_active = False
+if 'exam_group_id' not in st.session_state: st.session_state.exam_group_id = None
+
+# Exam Mode Callback
+def start_exam():
+    st.session_state.scores = {}
+    st.session_state.active_view = "🃏 Mode Flashcards"
+    st.session_state.card_index = 0
+    st.session_state.show_answer = False
+    
+    # Pick a random group from 0 to 99
+    valid_groups = df['Group_ID'].unique()
+    exam_group = int(random.choice(valid_groups))
+    
+    st.session_state.exam_mode_active = True
+    st.session_state.exam_group_id = exam_group
+
+# View Switch Callback
+def switch_to_card(index):
+    st.session_state.active_view = "🃏 Mode Flashcards"
+    st.session_state.card_index = index
+    st.session_state.show_answer = False
+    
+# Remove Exam Mode if user interacts with sidebar filters
+def reset_exam_mode():
+    st.session_state.exam_mode_active = False
 
 # Sidebar
 with st.sidebar:
     st.header("Filtres")
     categories = ["Tous"] + sorted(df['Category'].unique().tolist())
-    selected_category = st.selectbox("Sujet", categories)
-    group_id_search = st.text_input("Derniers chiffres compteur (00-99)", placeholder="Ex: 42")
+    
+    # Force filters if Exam Mode is active
+    if st.session_state.exam_mode_active:
+        selected_category = st.selectbox("Sujet", categories, index=0, on_change=reset_exam_mode)
+        group_id_search = st.text_input("Derniers chiffres compteur (00-99)", value=str(st.session_state.exam_group_id), on_change=reset_exam_mode)
+        st.success("🎓 EXAMEN BLANC EN COURS")
+    else:
+        selected_category = st.selectbox("Sujet", categories, on_change=reset_exam_mode)
+        group_id_search = st.text_input("Derniers chiffres compteur (00-99)", placeholder="Ex: 42", on_change=reset_exam_mode)
     
     st.markdown("---")
-    if st.button("🔀 Tirage Aléatoire"):
+    st.button("🎓 Lancer un Examen Blanc", on_click=start_exam, use_container_width=True, type="primary")
+    st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+    if st.button("🔀 Tirage Aléatoire", use_container_width=True):
         if not filtered_df.empty:
             st.session_state.card_index = random.randint(0, len(filtered_df)-1)
             st.session_state.show_answer = False
@@ -251,7 +287,7 @@ with st.sidebar:
         st.rerun()
     
     st.markdown("---")
-    st.caption("Version 1.0.1")
+    st.caption("Version 1.1.0")
 
 # Filtering logic
 filtered_df = df
@@ -266,20 +302,36 @@ if group_id_search:
 
 if filtered_df.empty:
     st.warning("Aucun résultat pour cette recherche. Veuillez modifier vos filtres dans le menu latéral.")
-    # Show empty state in tabs instead of stopping the app to keep sidebar alive
-    tab1, tab2 = st.tabs(["🃏 Mode Flashcards", "📋 Mode Liste Colorée"])
-    with tab1: st.info("Aucune carte à afficher.")
-    with tab2: st.info("Aucune liste à afficher.")
     st.stop()
+    
+# Layout Control - Replacement for st.tabs
+st.markdown("""
+    <style>
+    div[data-testid="stRadio"] > div {
+        flex-direction: row;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+    div[data-testid="stRadio"] label {
+        padding: 10px 30px;
+        background-color: """ + CARD_DARK + """;
+        border-radius: 8px;
+        cursor: pointer;
+        border: 1px solid """ + DIVIDER + """;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+view_selection = st.radio("Navigation", ["🃏 Mode Flashcards", "📋 Mode Liste Colorée"], 
+                         index=0 if st.session_state.active_view == "🃏 Mode Flashcards" else 1,
+                         key="active_view", 
+                         label_visibility="collapsed")
 
 # Reset index if out of bounds
 if st.session_state.card_index >= len(filtered_df):
     st.session_state.card_index = 0
 
-# TABS
-tab1, tab2 = st.tabs(["🃏 Mode Flashcards", "📋 Mode Liste Colorée"])
-
-with tab1:
+if view_selection == "🃏 Mode Flashcards":
     # Card Display
     row = filtered_df.iloc[st.session_state.card_index]
     uid = row['UID']
@@ -348,13 +400,12 @@ with tab1:
     st.caption(f"Question {st.session_state.card_index + 1} sur {len(filtered_df)}")
 
 
-with tab2:
+elif view_selection == "📋 Mode Liste Colorée":
     st.markdown("### Liste Complète des Questions")
     st.caption("Filtrez via le menu latéral pour afficher uniquement le groupe désiré.")
     
-    # Render custom HTML list
-    list_html = "<div>"
-    for _, item in filtered_df.iterrows():
+    # Iterate dynamically to create buttons inline
+    for local_index, (_, item) in enumerate(filtered_df.iterrows()):
         cat = str(item['Category']).lower()
         if "technical" in cat: border_class = "cat-tech"
         elif "safety" in cat: border_class = "cat-safe"
@@ -365,7 +416,11 @@ with tab2:
         if uid in st.session_state.scores:
             status = " <span style='color:#81C995;'>✅</span>" if st.session_state.scores[uid] else " <span style='color:#F28B82;'>❌</span>"
             
-        list_html += f'<div class="list-item {border_class}"><div class="list-meta">{item["Category"]} | GROUPE {str(item["Group_ID"]).zfill(2)}{status}</div><div class="list-q">{item["Question"]}</div><div class="list-a"><strong>Rép:</strong> {item["Reponse Attendue"]}</div></div>'
-    list_html += "</div>"
-    
-    st.markdown(list_html, unsafe_allow_html=True)
+        c1, c2 = st.columns([6, 1], vertical_alignment="center")
+        with c1:
+            html = f'<div class="list-item {border_class}" style="margin-bottom: 0px;"><div class="list-meta">{item["Category"]} | GROUPE {str(item["Group_ID"]).zfill(2)}{status}</div><div class="list-q">{item["Question"]}</div><div class="list-a"><strong>Rép:</strong> {item["Reponse Attendue"]}</div></div>'
+            st.markdown(html, unsafe_allow_html=True)
+        with c2:
+            st.button("🃏 Étudier", key=f"btn_{uid}", on_click=switch_to_card, args=(local_index,), use_container_width=True)
+            
+        st.markdown("<br>", unsafe_allow_html=True)

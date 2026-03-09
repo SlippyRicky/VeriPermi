@@ -303,7 +303,7 @@ with st.sidebar:
         st.rerun()
     
     st.markdown("---")
-    st.caption("Version 1.1.0")
+    st.caption("Version 1.0.2")
 
 # Filtering logic
 filtered_df = df

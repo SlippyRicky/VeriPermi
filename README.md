@@ -1,49 +1,49 @@
-# 🚗 Permis de Conduire - Flashcard App
+# 🚗 VeriPermi - Application de Flashcards pour le Permis B
 
-This is a comprehensive, interactive Flashcard Application designed to help you prepare for the oral examination of the French driving license (**Permis B**). It includes all **100 groups of questions** covering Technical Verifications, Road Safety, and First Aid, complete with the expected answers and highly specific, contextual tips.
+VeriPermi est une application interactive complète conçue pour vous aider à préparer l'épreuve orale de l'examen pratique du permis de conduire français (**Permis B**). Elle regroupe l'intégralité des **100 groupes de questions officielle**, couvrant les vérifications techniques, la sécurité routière et les premiers secours.
 
-## ✨ Features
-*   **Complete Official Database**: All 300 questions extracted directly from the official examiner's bank.
-*   **Smart Search**: Filter questions by the **Group ID** (the last 2 digits of your vehicle's odometer), simulating the exact condition of your real exam.
-*   **"Contexte & Astuce"**: Custom-generated context notes for each question to help you understand *why* the question is asked, not just what the answer is.
-*   **Dark Mode Material Design**: A clean, professional, and eye-friendly interface.
-*   **Cross-Platform Auto-Setup**: Ready to run out of the box on Windows, macOS, and Linux.
+## ✨ Caractéristiques
+*   **Base de Données Officielle Complète** : Les 300 questions (100 séries de 3) extraites directement de la banque d'examen du Ministère de l'Intérieur.
+*   **Recherche Intelligente** : Filtrez les questions par **ID de Groupe** (correspondant aux 2 derniers chiffres de votre compteur kilométrique), simulant exactement les conditions réelles de l'examen.
+*   **Contexte & Astuces** : Chaque question est accompagnée d'un encadré pédagogique pour comprendre l'enjeu de la question et mémoriser plus facilement.
+*   **Design Material Dark** : Une interface moderne, épurée et reposante pour les yeux (Mode Sombre).
+*   **Auto-Installation Multi-Plateforme** : Prêt à l'emploi sur Windows, macOS et Linux sans configuration manuelle complexe.
 
 ---
 
-## 🛠️ Installation & Usage
+## 🛠️ Installation et Utilisation
 
-This project is designed to be as "plug-and-play" as possible. You do not need to manually install dependencies or set up environments; the provided launcher scripts handle everything automatically.
+Ce projet est conçu pour être "Plug-and-Play". Les scripts de lancement s'occupent de tout : création de l'environnement virtuel, installation des dépendances et lancement de l'application.
 
-### Prerequisites
-*   You must have **Python 3.8+** installed on your system.
-    *   *Windows*: Download from [python.org](https://www.python.org/downloads/) (Make sure to check "Add Python to PATH" during installation).
-    *   *macOS/Linux*: Usually pre-installed, or can be installed via `brew install python` / `apt install python3`.
+### Prérequis
+*   Avoir **Python 3.8+** installé sur votre système.
+    *   *Windows* : Téléchargez sur [python.org](https://www.python.org/downloads/) (Cochez bien "Add Python to PATH" lors de l'installation).
+    *   *macOS/Linux* : Généralement pré-installé, ou via `brew install python`.
 
-### 🍎 For macOS & 🐧 Linux Users
-1.  Open your Terminal.
-2.  Navigate to this project folder.
-3.  Run the launcher script:
+### 🍎 Pour macOS & 🐧 Linux
+1.  Ouvrez votre Terminal.
+2.  Accédez au dossier du projet.
+3.  Lancez le script :
     ```bash
     ./run_app.sh
     ```
-*Note: The script will automatically create a secure virtual environment, install dependencies, and open the app in your default web browser.*
+*Note : Le script ouvrira automatiquement l'application dans votre navigateur par défaut.*
 
-### 🪟 For Windows Users
-1.  Open this project folder in File Explorer.
-2.  **Double-click** the `run_app.bat` file.
-*Note: A command prompt will appear to show the setup progress, and then your browser will automatically open the application.*
-
----
-
-## 📂 Project Structure
-
-*   `run_app.sh` / `run_app.bat`: Cross-platform launcher scripts.
-*   `requirements.txt`: Python dependency list (Streamlit, Pandas).
-*   **`App/`**:
-    *   `app.py`: The main Streamlit web application.
-    *   `driving_questions.csv`: The complete, 300-question database.
-*   **`banque-verifications-23_01_2023.pdf`**: The official Ministry of Interior document source.
+### 🪟 Pour Windows
+1.  Ouvrez le dossier du projet dans l'Explorateur de fichiers.
+2.  **Double-cliquez** sur le fichier `run_app.bat`.
+*Note : Une fenêtre de commande s'ouvrira pour configurer l'application, puis votre navigateur lancera l'interface.*
 
 ---
-*Created to guarantee you secure those 3 essential points on your practical exam! Bonne chance!* 🚦
+
+## 📂 Structure du Projet
+
+*   `run_app.sh` / `run_app.bat` : Scripts de lancement automatique.
+*   `requirements.txt` : Liste des dépendances (Streamlit, Pandas).
+*   **`App/`** :
+    *   `app.py` : Code source de l'application web.
+    *   `driving_questions.csv` : Base de données complète des 300 questions.
+*   **`banque-verifications-23_01_2023.pdf`** : Document officiel source du Ministère.
+
+---
+*Développé pour vous garantir les 3 points faciles de l'examen oral. Bonne chance !* 🚦

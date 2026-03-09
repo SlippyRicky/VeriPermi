@@ -198,9 +198,9 @@ if st.session_state.card_index >= len(filtered_df):
 # Card Display
 row = filtered_df.iloc[st.session_state.card_index]
 cat_tag = f"{row['Category']} | GROUPE {str(row['Group_ID']).zfill(2)}"
-q_text = row['Question'].replace("'", "&#39;")
-a_text = row['Reponse Attendue'].replace("'", "&#39;")
-c_text = row['Context Info'].replace("'", "&#39;")
+q_text = str(row['Question'])
+a_text = str(row['Reponse Attendue'])
+c_text = str(row['Context Info'])
 
 card_html = f'<div class="card"><div><div class="category-tag">{cat_tag}</div><div class="question">{q_text}</div></div>'
 if st.session_state.show_answer:

@@ -405,8 +405,8 @@ elif view_selection == "📋 Mode Liste Colorée":
     # Iterate dynamically to create buttons inline
     for local_index, (_, item) in enumerate(filtered_df.iterrows()):
         cat = str(item['Category']).lower()
-        if "technical" in cat: border_class = "cat-tech"
-        elif "safety" in cat: border_class = "cat-safe"
+        if "vérification" in cat: border_class = "cat-tech"
+        elif "sécurité" in cat: border_class = "cat-safe"
         else: border_class = "cat-first"
         
         status = ""

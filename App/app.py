@@ -249,6 +249,22 @@ def switch_to_card(index):
     st.session_state.active_view = "🃏 Mode Flashcards"
     st.session_state.card_index = index
     st.session_state.show_answer = False
+
+# Card Navigation Callbacks
+def next_card_cb(total):
+    st.session_state.card_index = (st.session_state.card_index + 1) % total
+    st.session_state.show_answer = False
+
+def prev_card_cb(total):
+    st.session_state.card_index = (st.session_state.card_index - 1) % total
+    st.session_state.show_answer = False
+
+def toggle_answer_cb():
+    st.session_state.show_answer = not st.session_state.show_answer
+
+def eval_card_cb(uid, correct, total):
+    st.session_state.scores[uid] = correct
+    next_card_cb(total)
     
 # Remove Exam Mode if user interacts with sidebar filters
 def reset_exam_mode():
@@ -358,20 +374,12 @@ if view_selection == "🃏 Mode Flashcards":
     # Core Navigation Buttons
     c1, c2, c3 = st.columns([1, 2, 1])
     with c1:
-        if st.button("← Précédent", use_container_width=True):
-            st.session_state.card_index = (st.session_state.card_index - 1) % len(filtered_df)
-            st.session_state.show_answer = False
-            st.rerun()
+        st.button("← Précédent", on_click=prev_card_cb, args=(len(filtered_df),), use_container_width=True)
     with c2:
         label = "Masquer la réponse" if st.session_state.show_answer else "Afficher la réponse"
-        if st.button(label, use_container_width=True):
-            st.session_state.show_answer = not st.session_state.show_answer
-            st.rerun()
+        st.button(label, key=f"btn_toggle", on_click=toggle_answer_cb, use_container_width=True)
     with c3:
-        if st.button("Suivant →", use_container_width=True):
-            st.session_state.card_index = (st.session_state.card_index + 1) % len(filtered_df)
-            st.session_state.show_answer = False
-            st.rerun()
+        st.button("Suivant →", on_click=next_card_cb, args=(len(filtered_df),), use_container_width=True)
             
     # Self-Evaluation Buttons (Only visible when answer is shown)
     if st.session_state.show_answer:
@@ -379,19 +387,11 @@ if view_selection == "🃏 Mode Flashcards":
         col_eval1, col_eval2, col_eval3, col_eval4 = st.columns([1, 1, 1, 1])
         with col_eval2:
             st.markdown('<div class="btn-success">', unsafe_allow_html=True)
-            if st.button("✅ J'avais bon", use_container_width=True):
-                st.session_state.scores[uid] = True
-                st.session_state.card_index = (st.session_state.card_index + 1) % len(filtered_df)
-                st.session_state.show_answer = False
-                st.rerun()
+            st.button("✅ J'avais bon", key=f"btn_correct_{uid}", on_click=eval_card_cb, args=(uid, True, len(filtered_df)), use_container_width=True)
             st.markdown('</div>', unsafe_allow_html=True)
         with col_eval3:
             st.markdown('<div class="btn-danger">', unsafe_allow_html=True)
-            if st.button("❌ J'avais faux", use_container_width=True):
-                st.session_state.scores[uid] = False
-                st.session_state.card_index = (st.session_state.card_index + 1) % len(filtered_df)
-                st.session_state.show_answer = False
-                st.rerun()
+            st.button("❌ J'avais faux", key=f"btn_false_{uid}", on_click=eval_card_cb, args=(uid, False, len(filtered_df)), use_container_width=True)
             st.markdown('</div>', unsafe_allow_html=True)
 
     # Progress

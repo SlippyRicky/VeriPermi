@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import random
 import os
+from PIL import Image
 
 # Material Design Dark Theme Colors
 PRIMARY_BLUE = "#8AB4F8"
@@ -214,6 +215,8 @@ def load_data(file_path):
                 
         # Create a unique ID for tracking scores
         df['UID'] = df.index
+        # Fill missing values to avoid 'nan' strings in UI
+        df = df.fillna("")
         return df
     except: return None
 
@@ -225,7 +228,7 @@ if df is None:
 # State Management
 if 'card_index' not in st.session_state: st.session_state.card_index = 0
 if 'show_answer' not in st.session_state: st.session_state.show_answer = False
-if 'scores' not in st.session_state: st.session_state.scores = {} # Dict mapping UID -> True (Right) / False (Wrong)
+if 'scores' not in st.session_state: st.session_state.scores = {} 
 if 'active_view' not in st.session_state: st.session_state.active_view = "🃏 Mode Flashcards"
 if 'exam_mode_active' not in st.session_state: st.session_state.exam_mode_active = False
 if 'exam_group_id' not in st.session_state: st.session_state.exam_group_id = None
@@ -330,10 +333,10 @@ if filtered_df.empty:
 if st.session_state.card_index >= len(filtered_df):
     st.session_state.card_index = 0
 
-# Ensure view_selection is defined from session state if radio wasn't triggered
-view_selection = st.session_state.active_view
+# Ensure view_selection is defined
+view_selection = st.session_state.get("active_view", "🃏 Mode Flashcards")
 
-if view_selection == "🃏 Mode Flashcards":
+if "Flashcards" in view_selection:
     # Card Display
     row = filtered_df.iloc[st.session_state.card_index]
     uid = row['UID']
@@ -350,7 +353,13 @@ if view_selection == "🃏 Mode Flashcards":
 
     card_html = f'<div class="card"><div><div class="category-tag">{cat_tag}{status_icon}</div><div class="question">{q_text}</div></div>'
     if st.session_state.show_answer:
-        card_html += f'<div><div class="divider"></div><div style="display: flex; flex-direction: column; gap: 20px;"><div class="answer-container"><div style="font-size: 0.85rem; font-weight: bold; color: {PRIMARY_BLUE}; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em;">Réponse Attendue</div><div class="answer">{a_text}</div></div><div class="context-container" style="background-color: rgba(255, 255, 255, 0.03); border-left: 4px solid {TEXT_SECONDARY}; padding: 20px; border-radius: 4px;"><div style="font-size: 0.85rem; font-weight: bold; color: {TEXT_SECONDARY}; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em;">💡 Contexte & Astuce</div><div style="font-size: 1.05rem; color: {TEXT_PRIMARY}; line-height: 1.5; font-style: italic;">{c_text}</div></div></div></div>'
+        card_html += f'<div><div class="divider"></div><div style="display: flex; flex-direction: column; gap: 20px;"><div class="answer-container"><div style="font-size: 0.85rem; font-weight: bold; color: {PRIMARY_BLUE}; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em;">Réponse Attendue</div><div class="answer">{a_text}</div></div>'
+        
+        # Only show context if it's not empty
+        if c_text.strip():
+            card_html += f'<div class="context-container" style="background-color: rgba(255, 255, 255, 0.03); border-left: 4px solid {TEXT_SECONDARY}; padding: 20px; border-radius: 4px;"><div style="font-size: 0.85rem; font-weight: bold; color: {TEXT_SECONDARY}; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em;">💡 Contexte & Astuce</div><div style="font-size: 1.05rem; color: {TEXT_PRIMARY}; line-height: 1.5; font-style: italic;">{c_text}</div></div>'
+        
+        card_html += '</div></div>'
     card_html += '</div>'
 
     st.markdown(card_html, unsafe_allow_html=True)
@@ -384,7 +393,7 @@ if view_selection == "🃏 Mode Flashcards":
     st.caption(f"Question {st.session_state.card_index + 1} sur {len(filtered_df)}")
 
 
-elif view_selection == "📋 Mode Liste Colorée":
+elif "Liste" in view_selection:
     st.markdown("### Liste Complète des Questions")
     st.caption("Filtrez via le menu latéral pour afficher uniquement le groupe désiré.")
     
@@ -409,12 +418,16 @@ elif view_selection == "📋 Mode Liste Colorée":
             
         st.markdown("<br>", unsafe_allow_html=True)
 
-elif view_selection == "📊 Grille d'Évaluation":
+elif "Grille" in view_selection:
     st.markdown("### Grille d'Évaluation Officielle")
     st.caption("Voici la grille utilisée par l'inspecteur pour évaluer vos compétences lors de l'examen.")
     
     GRID_IMAGE = os.path.join(SCRIPT_DIR, "grille-d-evaluation-du-permis-city-zen.jpg")
     if os.path.exists(GRID_IMAGE):
-        st.image(GRID_IMAGE, use_container_width=True, caption="Grille type d'évaluation (Source: City-Zen)")
+        try:
+            image = Image.open(GRID_IMAGE)
+            st.image(image, use_column_width=True, caption="Grille type d'évaluation (Source: City-Zen)")
+        except Exception as e:
+            st.error(f"Erreur lors du chargement de l'image : {e}")
     else:
-        st.error("Image de la grille introuvable.")
+        st.error(f"Image de la grille introuvable.")

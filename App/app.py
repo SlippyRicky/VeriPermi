@@ -305,7 +305,7 @@ with st.sidebar:
         
     st.markdown("---")
     st.header("Navigation")
-    view_selection = st.radio("Mode d'affichage", ["🃏 Mode Flashcards", "📋 Mode Liste Colorée"], 
+    view_selection = st.radio("Mode d'affichage", ["🃏 Mode Flashcards", "📋 Mode Liste Colorée", "📊 Grille d'Évaluation"], 
                              key="active_view", 
                              label_visibility="collapsed")
 
@@ -408,3 +408,13 @@ elif view_selection == "📋 Mode Liste Colorée":
             st.button("🃏 Étudier", key=f"btn_{uid}", on_click=switch_to_card, args=(local_index,), use_container_width=True)
             
         st.markdown("<br>", unsafe_allow_html=True)
+
+elif view_selection == "📊 Grille d'Évaluation":
+    st.markdown("### Grille d'Évaluation Officielle")
+    st.caption("Voici la grille utilisée par l'inspecteur pour évaluer vos compétences lors de l'examen.")
+    
+    GRID_IMAGE = os.path.join(SCRIPT_DIR, "grille-d-evaluation-du-permis-city-zen.jpg")
+    if os.path.exists(GRID_IMAGE):
+        st.image(GRID_IMAGE, use_container_width=True, caption="Grille type d'évaluation (Source: City-Zen)")
+    else:
+        st.error("Image de la grille introuvable.")

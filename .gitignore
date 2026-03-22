@@ -1,21 +1,54 @@
-# Python
+# Environments
 venv/
 .venv/
+env/
+.env/
+
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
 
-# IDEs
-.vscode/
-.idea/
+# Streamlit config (needed for app mode and stability)
+!.streamlit/config.toml
 
-# OS
+# OS-specific
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 
-# App logs
+# Project-specific logs and scratch
 *.log
 App/server.log
-
-# Scratchpad
 banque_verif.rtf
+pdf_text.txt
+pdf_layout.txt
+driving_questions_full.csv
+process_questions.py
+merge_questions.py
+test_parse.py
+rename.py
+GEMINI.md

@@ -1,0 +1,12 @@
+[server]
+headless = true
+port = 8501
+enableCORS = false
+enableXsrfProtection = false
+
+[browser]
+gatherUsageStats = false
+
+[fsevents]
+# Disabling fsevents can prevent crashes on macOS when the directory has many files (like venv)
+enable = false

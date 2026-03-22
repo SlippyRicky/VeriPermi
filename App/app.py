@@ -284,6 +284,17 @@ with st.sidebar:
         selected_category = st.selectbox("Sujet", categories, on_change=reset_exam_mode)
         group_id_search = st.text_input("Derniers chiffres compteur (00-99)", placeholder="Ex: 42", on_change=reset_exam_mode)
     
+    # Filtering logic - Must happen before buttons that use filtered_df
+    filtered_df = df
+    if selected_category != "Tous":
+        filtered_df = filtered_df[filtered_df['Category'] == selected_category]
+    if group_id_search:
+        try:
+            val = int(group_id_search)
+            filtered_df = filtered_df[filtered_df['Group_ID'] == val]
+        except ValueError:
+            st.error("Veuillez entrer un nombre valide (ex: 42).")
+
     st.markdown("---")
     st.button("🎓 Lancer un Examen Blanc", on_click=start_exam, use_container_width=True, type="primary")
     st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
@@ -292,6 +303,12 @@ with st.sidebar:
             st.session_state.card_index = random.randint(0, len(filtered_df)-1)
             st.session_state.show_answer = False
         
+    st.markdown("---")
+    st.header("Navigation")
+    view_selection = st.radio("Mode d'affichage", ["🃏 Mode Flashcards", "📋 Mode Liste Colorée"], 
+                             key="active_view", 
+                             label_visibility="collapsed")
+
     st.markdown("---")
     st.header("Statistiques")
     known = sum(1 for v in st.session_state.scores.values() if v)
@@ -305,47 +322,16 @@ with st.sidebar:
     st.markdown("---")
     st.caption("Version 1.0.2")
 
-# Filtering logic
-filtered_df = df
-if selected_category != "Tous":
-    filtered_df = filtered_df[filtered_df['Category'] == selected_category]
-if group_id_search:
-    try:
-        val = int(group_id_search)
-        filtered_df = filtered_df[filtered_df['Group_ID'] == val]
-    except ValueError:
-        st.sidebar.error("Veuillez entrer un nombre valide (ex: 42).")
-
 if filtered_df.empty:
     st.warning("Aucun résultat pour cette recherche. Veuillez modifier vos filtres dans le menu latéral.")
     st.stop()
     
-# Layout Control - Replacement for st.tabs
-st.markdown("""
-    <style>
-    div[data-testid="stRadio"] > div {
-        flex-direction: row;
-        justify-content: center;
-        margin-bottom: 20px;
-    }
-    div[data-testid="stRadio"] label {
-        padding: 10px 30px;
-        background-color: """ + CARD_DARK + """;
-        border-radius: 8px;
-        cursor: pointer;
-        border: 1px solid """ + DIVIDER + """;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
-view_selection = st.radio("Navigation", ["🃏 Mode Flashcards", "📋 Mode Liste Colorée"], 
-                         index=0 if st.session_state.active_view == "🃏 Mode Flashcards" else 1,
-                         key="active_view", 
-                         label_visibility="collapsed")
-
 # Reset index if out of bounds
 if st.session_state.card_index >= len(filtered_df):
     st.session_state.card_index = 0
+
+# Ensure view_selection is defined from session state if radio wasn't triggered
+view_selection = st.session_state.active_view
 
 if view_selection == "🃏 Mode Flashcards":
     # Card Display
